@@ -55,6 +55,9 @@ Returns the building's `exp / maximum exp at max level`, ranges from 0 to 1.
 
 Put in the correct fields to assign what fields should be increased per level.   
 Use `this.setExp()` and `this.incExp()` in the functions of the building to increase the exp of the block when you want.   
+Here are some useful tips:   
++ **`updateTile()` will be overridden.** Use `customUpdate()` instead.   
++ Define `levelUp(int level){}` in `objBuild` to do something after levelling up(**`hasLevelEffect` must be `true`**).   
 
 ## Fields   
 
@@ -67,12 +70,18 @@ The maximum level the block reaches.
 An array of `FieldCalculation`s, determining the fields that change based on level.   
 + **level0Color** `ffd37f`   
 The color of the level bar at level 0.   
-+ **levelMaxColor** `ffffff`   
++ **levelMaxColor** `f3e979`   
 The color of the level bar at max level.   
 + **exp0Color** `84ff00`   
 The color of the exp bar at exp 0.   
-+ **expMaxColor** `84ff00`   
++ **expMaxColor** `90ff00`   
 The color of the exp bar at max exp.   
++ **hasLevelEffect** `true`   
+Whether to check if a block levels up every time it gains experience. `false` is recommended for blocks that frequently/consistently gain experience to reduce lag.   
++ **levelUpFx** `Fx.upgradeCore`   
+The effect to create when levelling up. `hasLevelEffect` must be `true`.   
++ **levelUpSound** `Sounds.message`   
+The sound to play when levelling up. `hasLevelEffect` must be `true`.   
 
 ### FieldCalculation   
 
@@ -126,6 +135,9 @@ const inferno = lib.extend(ItemTurret, ItemTurret.ItemTurretBuild, "inferno", {
     this.incExp(20);
     print("Reload: "+inferno.reloadTime);
     this.super$shoot(type);
+  },
+  levelUp(level){
+    print("You leveled up to level " + level);
   }
 });
 ```
