@@ -135,6 +135,15 @@ module.exports = {
       totalExp(){
         return this._exp;
       },
+      totalLevel(){
+        return expblock.getLevel(this._exp);
+      },
+      expf(){
+        return expblock.getLvlf(this._exp);
+      },
+      levelf(){
+        return this._exp / expblock.maxExp;
+      },
       setExp(a){
         this._exp = a;
       },
