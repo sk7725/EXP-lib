@@ -1,7 +1,6 @@
 # EXP Library   
 
-+ EXP-LIB by sk7725!   
-+ Related files: `exp.js`   
++ EXP-LIB by sk7725!    
    
 Makes blocks store EXP and level up, and makes its base stats change accordingly.   
 Recommended for turrets or perhaps crafters.   
