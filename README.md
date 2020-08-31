@@ -36,6 +36,21 @@ Increments the building's exp. Clamped by `maxLevel` automatically.
 `<Location: Building>`   
 Returns the building's exp.   
 
+### totalLevel()   
+
+`<Location: Building>`   
+Returns the building's level.   
+
+### expf()   
+
+`<Location: Building>`   
+Returns the building's `exp / maximum exp required to level up`, ranges from 0 to 1.   
+
+### levelf()   
+
+`<Location: Building>`   
+Returns the building's `exp / maximum exp at max level`, ranges from 0 to 1.   
+
 # How To Use   
 
 Put in the correct fields to assign what fields should be increased per level.   
