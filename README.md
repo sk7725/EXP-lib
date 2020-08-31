@@ -31,7 +31,7 @@ Sets the building's exp.
 `<Location: Building>`   
 Increments the building's exp. Clamped by `maxLevel` automatically.   
 
-### getExp()   
+### totalExp()   
 
 `<Location: Building>`   
 Returns the building's exp.   
