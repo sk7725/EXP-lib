@@ -104,7 +104,7 @@ The type of the calculation.
 `"exp"`: **intensity** ^ Level + **start**   
 `"root"`: sqrt(Level \* **intensity**) + **start**   
 `"bool"`: Special type; **start** should be a boolean, not an integer.   
-    If `Level >= intensity`, the field will change from **start** to !**start**.   
+    - If `Level >= intensity`, the field will change from **start** to !**start**.   
 + **intensity** `1`   
 + **start** `0`   
 
