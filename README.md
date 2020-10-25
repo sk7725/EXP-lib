@@ -1,6 +1,6 @@
 # EXP Library   
 
-+ EXP-LIB by sk7725!    
++ EXP-LIB v2.9 by sk7725!    
    
 Makes blocks store EXP and level up, and makes its base stats change accordingly.   
 Recommended for turrets or perhaps crafters.   
@@ -92,7 +92,8 @@ An example of a valid `FieldCalculation`:
     type: "linear",
     field: "reloadTime",
     start: 60,
-    intensity: -5
+    intensity: -5,
+    cacheValue: false
 }
 ```
 
@@ -104,9 +105,13 @@ The type of the calculation.
 `"exp"`: **intensity** ^ Level + **start**   
 `"root"`: sqrt(Level \* **intensity**) + **start**   
 `"bool"`: Special type; **start** should be a boolean, not an integer.   
-    - If `Level >= intensity`, the field will change from **start** to !**start**.   
+If `Level >= intensity`, the field will change from **start** to !**start**.   
+`"list"`: Special type; **intensity** should be a list, not an integer.   
+The field will be `intensity[lvl]`, **start** is irrelevant.   
 + **intensity** `1`   
-+ **start** `0`   
++ **start** `The default field's value`   
++ **cacheValue** `false`
+Whether to store this value in each Building. If this is true, the value cached can be retrieved by `getCache(field)`. Use this to make use of the calculated field outside of `updateTile()`, where the `FieldCalculation` has no(or weird) effect.   
 
 # Example   
 
