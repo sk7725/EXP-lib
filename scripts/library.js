@@ -55,6 +55,9 @@ const upgradeBlockFx = new Effect(90, e => {
     });
 });
 
+const Integer = java.lang.Integer;
+//const String = java.lang.String;
+
 module.exports = {
     upgradeFx: upgradeBlockFx,
     sparkleFx: sparkleFx,
@@ -80,6 +83,9 @@ module.exports = {
             upgradeSparkleFx: sparkleFx,
             upgradeSound: Sounds.place,
             sparkleChance: 0.08,
+
+            //use this if this block's Integer config is reserved. Not recommended.
+            useStringSync: false,
 
             //below are legacy arrays
             linearInc: [],
@@ -250,6 +256,9 @@ module.exports = {
             expblock.upMaxLevel.push((tobj.max == undefined) ? expblock.maxLevel + 1 : tobj.max);
             expblock.upAuto.push((tobj.autoUpgrade == undefined) ? false : tobj.autoUpgrade);
         };*/
+        for(var i=0; i<expblock.upgrades.length; i++){
+            expblock.upgrades[i].id = i;
+        }
         expblock.upPerLevel = [];
         for(var i=0; i<expblock.maxLevel; i++){
             expblock.upPerLevel.push([]);
@@ -262,7 +271,20 @@ module.exports = {
         if(expblock.enableUpgrade){
             expblock.condConfig = expblock.configurable;
             expblock.configurable = true;
+            expblock.saveConfig = false;
             //expblock.hasLevelEffect = true;
+            if(!expblock.useStringSync){
+                expblock.config(Integer, (build, value) => {
+                    //print("Configured: "+value);
+                    if(value > 0) build.upgradeID(value - 1);
+                });
+            }
+            else{
+                expblock.config(String, (build, value) => {
+                    value = Number(value);
+                    if(!isNaN(value) && value > 0) build.upgradeID(value - 1);
+                });
+            }
         }
 
         objb = Object.assign(objb, {
@@ -335,29 +357,72 @@ module.exports = {
             sparkle(){
                 expblock.upgradeSparkleFx.at(this.x, this.y, expblock.size, expblock.upgradeColor);
             },
-            upgradeBlock(block, expected){
-                if(expected != this.totalLevel()){
+            upgradeID(id){
+                var lvl = this.totalLevel();
+                //print("UpgradeID: "+id);
+                if((lvl >= expblock.upgrades[id].min) && (expblock.upgrades[id].max === undefined || lvl <= expblock.upgrades[id].max)) this.upgradeBlock(expblock.upgrades[id].block);
+            },
+            upgradeBlock(block){
+                //print("UpgradeBlock: "+block);
+                /*if(expected != this.totalLevel()){
                     //invalid
                     Vars.control.input.frag.config.hideConfig();
                     return;
-                }
+                }*/
                 var tile = this.tile;
-                if(block.size > expblock.size) tile = this.getBestTile(block.size);
+                if(block.size > expblock.size) tile = this.getBestTile(tile, block.size, expblock.size);
                 if(tile == null) return;
-                Vars.control.input.frag.config.hideConfig();
+                //Vars.control.input.frag.config.hideConfig();
                 //TODO: sync
-                expblock.upgradeFx.at(this.x, this.y, block.size, expblock.upgradeColor);
-                expblock.upgradeSound.at(this.x, this.y);
+
+                if(!Vars.headless) expblock.upgradeSound.at(this.x, this.y);
                 tile.setBlock(block, this.team, this.rotation);
+                if(!Vars.headless) expblock.upgradeFx.at(tile.drawx(), tile.drawy(), block.size, expblock.upgradeColor);
             },
-            getBestTile(size){
+            getBestTile(tile, size, current){
                 //TODO:
-                return this.tile;
+                var bound = size - current + 1;
+                var offset = Mathf.floorPositive(bound / 2);
+                if(bound % 2 == 0 && current % 2 == 0) offset--;
+                offset *= -1;
+                var minScore = bound * bound * 2;
+                var ctile = null;
+                for(var i=offset; i<offset + bound; i++){
+                    for(var j=offset; j<offset + bound; j++){
+                        if(Math.max(Math.abs(i), Math.abs(j)) < minScore && this.notSolid(size, tile, i, j)){
+                            minScore = Math.max(Math.abs(i), Math.abs(j));
+                            ctile = tile.nearby(i, j);
+                        }
+                    }
+                }
+                return ctile;
+            },
+            notSolid(size, tile, dx, dy){
+                var ttile = tile.nearby(dx, dy);
+                var off = Mathf.floorPositive((size - 1) / 2) * -1;
+                for(var i= off; i<size + off; i++){
+                    for(var j= off; j<size + off; j++){
+                        var check = ttile.nearby(i, j);
+                        if(check.solid()){
+                            if(check.build != null && check.build.tile == tile) continue;
+                            else return false;
+                        }
+                    }
+                }
+                return true;
             },
 
-            makeUpgradeButton(t, iblock, lvl){
+            makeInfoButton(t, block){
+                t.button(Icon.infoCircle, Styles.cleari, () => {
+                    Vars.ui.content.show(block);
+                }).size(40);
+            },
+            makeUpgradeButton(t, id, lvl){
+                //print("Made IDButton:" + id);
                 t.button(Icon.upgrade, Styles.cleari, () => {
-                    this.upgradeBlock(iblock, lvl);
+                    Vars.control.input.frag.config.hideConfig();
+                    if(!expblock.useStringSync) this.configure(new Integer(id + 1));
+                    else this.configure((id + 1) + "");
                 }).size(40);
             },
             upgradeTable(table, lvl){
@@ -372,11 +437,9 @@ module.exports = {
                             info.left();
                             info.add("[green]"+block.localizedName+"[]\n"+Core.bundle.get("explib.level.short")+" ["+((arr[i].min == lvl)?"green":"accent")+"]"+lvl+"[]/"+arr[i].min);
                         })).width(80);
-                        t.button(Icon.infoCircle, Styles.cleari, () => {
-                            Vars.ui.content.show(block);
-                        }).size(40);
+                        this.makeInfoButton(t, block);
                         if(arr[i].min == lvl) Styles.cleari.imageUpColor = expblock.upgradeColor;
-                        this.makeUpgradeButton(t, arr[i].block, lvl);
+                        this.makeUpgradeButton(t, arr[i].id, lvl);
                         if(arr[i].min == lvl) Styles.cleari.imageUpColor = Color.white;
                     })).width(220).height(50);
 
