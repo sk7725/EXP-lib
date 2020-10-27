@@ -470,6 +470,19 @@ module.exports = {
                     }));
                 }
             },
+            /*
+            getCursor(){
+                if(!expblock.enableUpgrade) return this.super$getCursor();
+                else if(expblock.condConfig) return this.super$getCursor();
+                else{
+                    if(this._lastexp == this.totalExp() && (this._cachedCursor != null)) return this._cachedCursor;
+                    else{
+                        this._lastexp = this.totalExp();
+                        this._cachedCursor = (expblock.upPerLevel[this.totalLevel()].length > 0) ? SystemCursor.hand : SystemCursor.arrow;
+                        return this._cachedCursor;
+                    }
+                }
+            },*/
             configTapped(){
                 if(!this.super$configTapped()) return false;
                 if(!expblock.enableUpgrade) return true;
